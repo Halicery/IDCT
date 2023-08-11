@@ -23,7 +23,7 @@ The motivation for these algorithms was to implement an acceptable and fast 8x8 
 
 The inverse DCT is the very last stage of the image decoding process, which reconstructs the original image sample values. After coefficient decoding each value of the block is multiplied by the quantization table values (*de-quantization*). The transform itself is quite computation intensive, the 2-D formula is an iteration of 8x8x8x8 = 4096 multiplications with irrational numbers, based on the equation 
 
-["formula_2d.png" width="300em"]: 
+![]("formula_2d.png")
 
 	.  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .
 	.  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .

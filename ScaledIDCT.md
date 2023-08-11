@@ -23,7 +23,9 @@ The motivation for these algorithms was to implement an acceptable and fast 8x8 
 
 The inverse DCT is the very last stage of the image decoding process, which reconstructs the original image sample values. After coefficient decoding each value of the block is multiplied by the quantization table values (*de-quantization*). The transform itself is quite computation intensive, the 2-D formula is an iteration of 8x8x8x8 = 4096 multiplications with irrational numbers, based on the equation 
 
-![]("formula_2d.png")
+<img src="formula_2d.png">
+
+
 
 	.  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .
 	.  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .                   .  .  .  .  .  .  .  .
@@ -50,10 +52,13 @@ By clever *pre-multiplication* (scaling) of the 8x8 input block before the IDCT,
 
 ## 1-D transform
 
-The 2-D IDCT above is tremendously slow to implement. Most of the fast DCT algorithms are based on the separability of the 2-D transform into successive 1-D row- and column transforms (or column- and row transform). The 8-point 1-D transform computes 8 outputs from 8 inputs based on ["formula_1d.png" width="200em"] and can be implemented as matrix multiplication. An iteration of 8x8 = 64 multiplications with irrational numbers. The transform is linear (this will be important later): 
+The 2-D IDCT above is tremendously slow to implement. Most of the fast DCT algorithms are based on the separability of the 2-D transform into successive 1-D row- and column transforms (or column- and row transform). The 8-point 1-D transform computes 8 outputs from 8 inputs based on <img src="formula_1d.png" width="200em"> and can be implemented as matrix multiplication. An iteration of 8x8 = 64 multiplications with irrational numbers. The transform is linear (this will be important later): 
 
 		                                   1-D transform
 		X¨0¨  X¨1¨  X¨2¨  X¨3¨  X¨4¨  X¨5¨  X¨6¨  X¨7¨     --------------->    x¨0¨  x¨1¨  x¨2¨  x¨3¨  x¨4¨  x¨5¨  x¨6¨  x¨7¨
+<pre>X<sup>0</sup>  </pre>
+<pre>X<sub>0</sub>  X</sub>1</sub>  X</sub>2</sub>  X</sub>3</sub>  X</sub>4</sub>  X</sub>5</sub>  X</sub>6</sub>  X</sub>7</sub>     --------------->    x</sub>0</sub>  x</sub>1</sub>  x</sub>2</sub>  <pre>x</sub>3</sub>  x</sub>4</sub>  x</sub>5</sub>  x</sub>6</sub>  x</sub>7</sub>
+
 
 This transform function is applied 16 times for the 8x8 block as 8 row- and 8 column-transforms (16 x 64 = 1024 multiplication). Usually implementations use only one 1-D routine working on input and output arrays. In order to use the same function, the result is written transposed through a temp-block:
 

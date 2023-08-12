@@ -53,12 +53,10 @@ By clever *pre-multiplication* (scaling) of the 8x8 input block before the IDCT,
 ## 1-D transform
 
 The 2-D IDCT above is tremendously slow to implement. Most of the fast DCT algorithms are based on the separability of the 2-D transform into successive 1-D row- and column transforms (or column- and row transform). The 8-point 1-D transform computes 8 outputs from 8 inputs based on <img src="formula_1d.png" width="200em"> and can be implemented as matrix multiplication. An iteration of 8x8 = 64 multiplications with irrational numbers. The transform is linear (this will be important later): 
-
-		                                   1-D transform
-		X¨0¨  X¨1¨  X¨2¨  X¨3¨  X¨4¨  X¨5¨  X¨6¨  X¨7¨     --------------->    x¨0¨  x¨1¨  x¨2¨  x¨3¨  x¨4¨  x¨5¨  x¨6¨  x¨7¨
-<pre>X<sup>0</sup>  </pre>
-<pre>X<sub>0</sub>  X</sub>1</sub>  X</sub>2</sub>  X</sub>3</sub>  X</sub>4</sub>  X</sub>5</sub>  X</sub>6</sub>  X</sub>7</sub>     --------------->    x</sub>0</sub>  x</sub>1</sub>  x</sub>2</sub>  <pre>x</sub>3</sub>  x</sub>4</sub>  x</sub>5</sub>  x</sub>6</sub>  x</sub>7</sub>
-
+<pre>
+		                  1-D transform
+X<sub>0</sub>  X<sub>1</sub>  X<sub>2</sub>  X<sub>3</sub>  X<sub>4</sub>  X<sub>5</sub>  X<sub>6</sub>  X<sub>7</sub>     --------------->    x<sub>0</sub>  x<sub>1</sub>  x<sub>2</sub> x<sub>3</sub>  x<sub>4</sub>  x<sub>5</sub>  x<sub>6</sub>  x<sub>7</sub>
+</pre>
 
 This transform function is applied 16 times for the 8x8 block as 8 row- and 8 column-transforms (16 x 64 = 1024 multiplication). Usually implementations use only one 1-D routine working on input and output arrays. In order to use the same function, the result is written transposed through a temp-block:
 
@@ -77,10 +75,11 @@ This transform function is applied 16 times for the 8x8 block as 8 row- and 8 co
 
 Among the endless number of fast algorithms I've been fascinated by Löffler's paper from 1989, its clean and simple solution. It gives a method the compute the 8-point 1-D transform with 11 multiplications:
 
-["LLMIDCT.GIF" width="50%"] 
-§Image source: Reznik, Hindsy, Zhangz, Yuz, and Ni, Efficient Fixed-Point Approximations of the 8x8 Inverse Discrete Cosine Transform§
+<img src="LLMIDCT.GIF" width="50%"></img> 
 
-As you can see there are no multiplications needed for X¨0¨ and X¨4¨. This is because LLM *uniformly scales* the orthonormal DCT matrix by &radic;8, i.e. the DCT matrix's vectors are of lenght &radic;8 (instead of 1 as for an orthonormal matrix). This trick makes v¨0¨ and v¨4¨ all having coordinates of 1. Applying this DCT matrix twice (row/column method) gives results multiplied by 8 = (&radic;8)^2^ - which is easy to implement as right shift to get the correct values after the transform. 
+Image source: Reznik, Hindsy, Zhangz, Yuz, and Ni, Efficient Fixed-Point Approximations of the 8x8 Inverse Discrete Cosine Transform
+
+As you can see there are no multiplications needed for X<sub>0</sub> and X<sub>4</sub>. This is because LLM *uniformly scales* the orthonormal DCT matrix by &radic;8, i.e. the DCT matrix's vectors are of lenght &radic;8 (instead of 1 as for an orthonormal matrix). This trick makes v<sub>0</sub> and v<sub>4</sub> all having coordinates of 1. Applying this DCT matrix twice (row/column method) gives results multiplied by 8 = (&radic;8)<sup>2</sup> - which is easy to implement as right shift to get the correct values after the transform. 
 
 LLM uses these 7 irrational constants:
 
@@ -101,8 +100,7 @@ After rearranging the order of inputs 2 basic structures reveal:
 - an adder (blue)
 - and a butterfly-multiplier (red):  
 
-
-["LLMIDCT_TA.gif" width="50%"]
+<img src="LLMIDCT_TA.GIF" width="50%"></img> 
 
 The adder takes 4 inputs (a, b, c and d) and computes 4 new outputs according to: 
 
@@ -137,26 +135,26 @@ These are mathematically equivalent but chosing one of them have an impact when 
 
 ## How the scaling matrix works
 
-First lets see how to eliminate the &radic;2 multiplication of F¨3¨ and F¨5¨ inside a simplified LLM 1D-transform. 
+First lets see how to eliminate the &radic;2 multiplication of F<sub>3</sub> and F<sub>5</sub> inside a simplified LLM 1D-transform. 
+
+<pre>
+   +-------------+                                   +----------+         
+F<sub>0</sub>-|---->       -|-->  f<sub>0</sub>                      F<sub>0</sub>----|->       -|-->  f<sub>0</sub>   
+F<sub>1</sub>-|---->       -|-->  f<sub>1</sub>                      F<sub>1</sub>----|->       -|-->  f<sub>1</sub>   
+F<sub>2</sub>-|---->       -|-->  f<sub>2</sub>                      F<sub>2</sub>----|->       -|-->  f<sub>2</sub>   
+F<sub>3</sub>-|-&radic;2->       -|-->  f<sub>3</sub>      --->          &radic;2F<sub>3</sub>----|->       -|-->  f<sub>3</sub>
+F<sub>4</sub>-|---->       -|-->  f<sub>4</sub>                      F<sub>4</sub>----|->       -|-->  f<sub>4</sub>   
+F<sub>5</sub>-|-&radic;2->       -|-->  f<sub>5</sub>                    &radic;2F<sub>5</sub>----|->       -|-->  f<sub>5</sub>
+F<sub>6</sub>-|---->       -|-->  f<sub>6</sub>                      F<sub>6</sub>----|->       -|-->  f<sub>6</sub>   
+F<sub>7</sub>-|---->       -|-->  f<sub>7</sub>                      F<sub>7</sub>----|->       -|-->  f<sub>7</sub>   
+   +-------------+                                   +----------+         
+     original                                          modified
+</pre>
+
+The solution uses scaled inputs: that is F<sub>3</sub>and F<sub>5</sub> entering the 1-D transform is already multiplied by &radic;2. Because if the 2-D transform is successive row- the column transforms with transposed output (using the same function for both), understanding the scaling matrix is a little complicated. So lets go backwards:
 
 
-		    +-------------+                                     +----------+         
-		F¨0¨ -|---->       -|-->  f¨0¨                       F¨0¨ ----|->       -|-->  f¨0¨    
-		F¨1¨ -|---->       -|-->  f¨1¨                       F¨1¨ ----|->       -|-->  f¨1¨    
-		F¨2¨ -|---->       -|-->  f¨2¨                       F¨2¨ ----|->       -|-->  f¨2¨    
-		F¨3¨ -|-&radic;2->       -|-->  f¨3¨   --->              &radic;2F¨3¨ ----|->       -|-->  f¨3¨
-		F¨4¨ -|---->       -|-->  f¨4¨                       F¨4¨ ----|->       -|-->  f¨4¨    
-		F¨5¨ -|-&radic;2->       -|-->  f¨5¨                     &radic;2F¨5¨ ----|->       -|-->  f¨5¨
-		F¨6¨ -|---->       -|-->  f¨6¨                       F¨6¨ ----|->       -|-->  f¨6¨    
-		F¨7¨ -|---->       -|-->  f¨7¨                       F¨7¨ ----|->       -|-->  f¨7¨    
-		    +-------------+                                     +----------+         
-		        original                                          modified
-
-
-The solution uses scaled inputs: that is F¨3¨ and F¨5¨ entering the 1-D transform is already multiplied by &radic;2. Because if the 2-D transform is successive row- the column transforms with transposed output (using the same function for both), understanding the scaling matrix is a little complicated. So lets go backwards:
-
-
-1. The modified 1-D transform of the second block works correctly when F¨3¨ and F¨5¨ of each row is already &radic;2-multiplied: 
+1. The modified 1-D transform of the second block works correctly when F<sub>3</sub>and F<sub>5</sub> of each row is already &radic;2-multiplied: 
 
 	                                                                 0  1  2  3  4  5  6  7
 	                                                                 
@@ -184,39 +182,40 @@ The solution uses scaled inputs: that is F¨3¨ and F¨5¨ entering the 1-D tran
 	                           7    .  .  .  .  .  .  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
 	                                                                                                           output
 
-3. But the first block transform using the modified 1-D transform also expects F¨3¨ and F¨5¨ of each row multiplied by &radic;2. In row 3 and 5, where all inputs are already scaled by &radic;2, F¨3¨ and F¨5¨ will be *double scaled*, ie. (&radic;2)&sup2; = 2, the intersection points marked by **#**:  
+3. But the first block transform using the modified 1-D transform also expects F<sub>3</sub> and F<sub>5</sub> of each row multiplied by &radic;2. In row 3 and 5, where all inputs are already scaled by &radic;2, F<sub>3</sub> and F<sub>5</sub> will be *double scaled*, ie. (&radic;2)&sup2; = 2, the intersection points marked by **#**:  
 
-	                                                                 0  1  2  3  4  5  6  7
+                                                                0  1  2  3  4  5  6  7
 	                                                                   
-	                           0    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
-	                           1    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
-	                           2    .  .  .  +  .  +  .  .   8 x 1D  .  .  .  +  .  +  .  .   8 x 1D  .  .  .  .  .  .  .  .
-	                           3    +  +  +  #  +  #  +  +   ----->  .  .  .  +  .  +  .  .   ----->  .  .  .  .  .  .  .  .
-	                           4    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
-	                           5    +  +  +  #  +  #  +  +           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
-	                           6    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
-	                           7    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          0    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          1    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          2    .  .  .  +  .  +  .  .   8 x 1D  .  .  .  +  .  +  .  .   8 x 1D  .  .  .  .  .  .  .  .
+                          3    +  +  +  #  +  #  +  +   ----->  .  .  .  +  .  +  .  .   ----->  .  .  .  .  .  .  .  .
+                          4    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          5    +  +  +  #  +  #  +  +           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          6    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
+                          7    .  .  .  +  .  +  .  .           .  .  .  +  .  +  .  .           .  .  .  .  .  .  .  .
 	                                                                                                           output
 
-This gives our scaling matrix, **S**, to multiply values of the 8x8 coefficient block before applying the modified IDCT twice, first on rows then on colums, thus eliminating the &radic;2 multiplication of F¨3¨ and F¨5¨ inside the modified LLM 1-D transform: 
+This gives our scaling matrix, **S**, to multiply values of the 8x8 coefficient block before applying the modified IDCT twice, first on rows then on colums, thus eliminating the &radic;2 multiplication of F<sub>3</sub> and F<sub>5</sub> inside the modified LLM 1-D transform: 
 
+<pre>
+         1   1   1  &radic;2   1  &radic;2   1   1
+         1   1   1  &radic;2   1  &radic;2   1   1
+         1   1   1  &radic;2   1  &radic;2   1   1
+  S =   &radic;2  &radic;2  &radic;2   2  &radic;2   2  &radic;2  &radic;2
+         1   1   1  &radic;2   1  &radic;2   1   1
+        &radic;2  &radic;2  &radic;2   2  &radic;2   2  &radic;2  &radic;2
+         1   1   1  &radic;2   1  &radic;2   1   1
+         1   1   1  &radic;2   1  &radic;2   1   1
+</pre>
 
-	          1   1   1  &radic;2   1  &radic;2   1   1
-	          1   1   1  &radic;2   1  &radic;2   1   1
-	          1   1   1  &radic;2   1  &radic;2   1   1
-	   S =   &radic;2  &radic;2  &radic;2   2  &radic;2   2  &radic;2  &radic;2
-	          1   1   1  &radic;2   1  &radic;2   1   1
-	         &radic;2  &radic;2  &radic;2   2  &radic;2   2  &radic;2  &radic;2
-	          1   1   1  &radic;2   1  &radic;2   1   1
-	          1   1   1  &radic;2   1  &radic;2   1   1
+**S** is also the result of a matrix multiplication of the column vector **v** and its transposed vector **v**<sup>T<sup>: 
 
-**S** is also the result of a matrix multiplication of the column vector **v** and its transposed vector **v**^T^: 
-
-**S** = **v v**^T^, 
+**S** = **v v**<sup>T<sup>, 
 
 where **v** = (1, 1, 1, &radic;2, 1, &radic;2, 1, 1): 
 
-		      |    1   1   1  &radic;2   1  &radic;2   1   1     (**v**^T^)
+		      |    1   1   1  &radic;2   1  &radic;2   1   1     (**v**<sup>T<sup>)
 		   ---|---------------------------------------------          
 		      |                                          
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 
@@ -229,7 +228,7 @@ where **v** = (1, 1, 1, &radic;2, 1, &radic;2, 1, 1):
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 
 		  (**v**) |                                          
 
-This essentially means that we have to focus only on finding a *good* scaling vector for a modified LLM transform, then we can simply obtain the final scaling matrix by computing **v v^T^** for the 2-D row/column method. Integrating this scaling matrix (*S*) into the quantization matrix (*Q*) by multiplying each value pairs yields the (real) *SQ* matrix - and a faster 1-D transform. 
+This essentially means that we have to focus only on finding a *good* scaling vector for a modified LLM transform, then we can simply obtain the final scaling matrix by computing **v v<sup>T<sup>** for the 2-D row/column method. Integrating this scaling matrix (*S*) into the quantization matrix (*Q*) by multiplying each value pairs yields the (real) *SQ* matrix - and a faster 1-D transform. 
 
 
 ## Scaling the even part butterfly
@@ -401,7 +400,7 @@ For the integer version, only an extra post-scale stage is required in the form 
 
 #### Using integer CPU arithmetics
 
-When using integer arithmetics, a good approximation of **v** is used, where **V** = INT (2^n^ **v**). After the second 1D-transform, all values are shifted right by *n*: 
+When using integer arithmetics, a good approximation of **v** is used, where **V** = INT (2<sup>n<sup> **v**). After the second 1D-transform, all values are shifted right by *n*: 
 
 - pre-scale (multiplication)
 - row-transform

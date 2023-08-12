@@ -1,6 +1,6 @@
 # DCT matrices 
 
-["DCTmatrix.png" width="500"]["CalcPlot3D-plot.png" width="200"]
+<img src=DCTmatrix.png width="300"></img><img src=CalcPlot3D-plot.png width="200"></img>
 
 
 #### Without going into deep academic
@@ -9,4 +9,4 @@ Some investigations on how to understand the DCT- and inverse DCT, as it is used
 
 
 
-I've written some more text about this, get the [PDF"Little about the DCT.pdf"] for full text and the [Excel sheet"Little about the DCT.xls"] for the calculations. 
+I've written some more text about this, get the <a href="Little about the DCT.pdf">Little about the DCT.pdf</a> for full text and the [Excel sheet"Little about the DCT.xls"] for the calculations. 

@@ -151,7 +151,7 @@ F<sub>7</sub>-|---->       -|-->  f<sub>7</sub>                      F<sub>7</su
      original                                          modified
 </pre>
 
-The solution uses scaled inputs: that is F<sub>3</sub>and F<sub>5</sub> entering the 1-D transform is already multiplied by &radic;2. Because if the 2-D transform is successive row- the column transforms with transposed output (using the same function for both), understanding the scaling matrix is a little complicated. So lets go backwards:
+The solution uses scaled inputs: that is F<sub>3</sub> and F<sub>5</sub> entering the 1-D transform is already multiplied by &radic;2. Because if the 2-D transform is successive row- the column transforms with transposed output (using the same function for both), understanding the scaling matrix is a little complicated. So lets go backwards:
 
 
 1. The modified 1-D transform of the second block works correctly when F<sub>3</sub>and F<sub>5</sub> of each row is already &radic;2-multiplied: 
@@ -209,13 +209,13 @@ This gives our scaling matrix, **S**, to multiply values of the 8x8 coefficient 
          1   1   1  &radic;2   1  &radic;2   1   1
 </pre>
 
-**S** is also the result of a matrix multiplication of the column vector **v** and its transposed vector **v**<sup>T<sup>: 
+**S** is also the result of a matrix multiplication of the column vector **v** and its transposed vector **v**<sup>T</sup>: 
 
-**S** = **v v**<sup>T<sup>, 
+**S** = **v v**<sup>T</sup>, 
 
 where **v** = (1, 1, 1, &radic;2, 1, &radic;2, 1, 1): 
 
-		      |    1   1   1  &radic;2   1  &radic;2   1   1     (**v**<sup>T<sup>)
+		      |    1   1   1  &radic;2   1  &radic;2   1   1     (**v**<sup>T</sup>)
 		   ---|---------------------------------------------          
 		      |                                          
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 

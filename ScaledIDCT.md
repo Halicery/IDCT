@@ -1,8 +1,8 @@
-# Scaled LLM[#LLM 1989 (C. Loeffler, A. Ligtenberg, and G. S. Moschytz, Practical fast 1-D DCT algorithms with 11 multiplications] 1-D IDCT with 6 multiplications 
+# Scaled LLM<sup><a id="backnote1" href="#Note1">[1]</a></sup> 1-D IDCT with 6 multiplications 
 
 &copy; A. Tarpai   
 
-Source code for this scaled integer IDCT can be found on [BitBucket"https://bitbucket.org/Halicery/" target="_blank"], as part of an ITU T.81 JPEG decoder I have written. 
+Source code for this scaled integer IDCT can be found in the Rainbow image decoder repo https://github.com/Halicery/vc_rainbow/blob/master/RAINBOW/idct.c , as part of an ITU T.81 JPEG decoder I have written. 
 
 ## Results
 
@@ -420,3 +420,8 @@ And an example integer matrix for scaled x3 and x5 by &radic;2. Here n=7 and &ra
 
 As for the modified LLM transform the final post-scale will be 7 + 3 = 10. 
 
+<h1 class="footnotehead">References:</h1><ol>
+<li class="footnoteli" id="Note1"><a class="backnoteref" href="#backnote1">^</a>&nbsp&nbspLLM 1989 (C. Loeffler, A. Ligtenberg, and G. S. Moschytz, Practical fast 1-D DCT algorithms with 11 multiplications)</li>
+</ol>
+
+<HR><small>Tue Jan 1 21:56:38 UTC+0100 2019 &copy; A. Tarpai</small>

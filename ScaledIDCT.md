@@ -215,7 +215,8 @@ This gives our scaling matrix, **S**, to multiply values of the 8x8 coefficient 
 
 where **v** = (1, 1, 1, &radic;2, 1, &radic;2, 1, 1): 
 
-		      |    1   1   1  &radic;2   1  &radic;2   1   1     (**v**<sup>T</sup>)
+<pre>
+		      |    1   1   1  &radic;2   1  &radic;2   1   1     (v<sup>T</sup>)
 		   ---|---------------------------------------------          
 		      |                                          
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 
@@ -226,45 +227,58 @@ where **v** = (1, 1, 1, &radic;2, 1, &radic;2, 1, 1):
 		  &radic;2  |   &radic;2  &radic;2  &radic;2   2  &radic;2   2  &radic;2  &radic;2                 
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 
 		   1  |    1   1   1  &radic;2   1  &radic;2   1   1                 
-		  (**v**) |                                          
+		  (v) |                                          
+</pre>
 
 This essentially means that we have to focus only on finding a *good* scaling vector for a modified LLM transform, then we can simply obtain the final scaling matrix by computing **v v<sup>T<sup>** for the 2-D row/column method. Integrating this scaling matrix (*S*) into the quantization matrix (*Q*) by multiplying each value pairs yields the (real) *SQ* matrix - and a faster 1-D transform. 
 
 
 ## Scaling the even part butterfly
 
-["even.gif" width="400em"]
+<img src="even.gif" width="50%"></img> 
 
-For X¨2¨ and X¨6¨ the even part starts with a butterfly multiplication. The 2 irrational constants (K and S) are:
+For X<sub>2</sub> and X<sub>6</sub> the even part starts with a butterfly multiplication. The 2 irrational constants (K and S) are:
 
-	K = &radic;2cos(3&pi;/8)
-	S = &radic;2sin(3&pi;/8)
+<pre>
+K = &radic;2cos(3&pi;/8)
+S = &radic;2sin(3&pi;/8)
+</pre>
 
 The outputs are computed according to the equation: 
 
-		x¨6¨ = K X¨6¨ + S X¨2¨ 
-		x¨2¨ = K X¨2¨ - S X¨6¨ 
+<pre>
+x<sub>6</sub> = K X<sub>6</sub> + S X<sub>2</sub> 
+x<sub>2</sub> = K X<sub>2</sub> - S X<sub>6</sub> 
+</pre>
 
-We can obtain x¨6¨ without multiplication inside a modified LLM transform when the inputs are scaled: let W¨6¨ = K X¨6¨ and W¨2¨ = S X¨2¨. Then x¨6¨ is simply 
+We can obtain x<sub>6</sub> without multiplication inside a modified LLM transform when the inputs are scaled: let W<sub>6</sub> = K X<sub>6</sub> and W<sub>2</sub> = S X<sub>2</sub>. Then x<sub>6</sub> is simply 
 
-		x¨6¨ = W¨6¨ + W¨2¨
+<pre>
+x<sub>6</sub> = W<sub>6</sub> + W<sub>2</sub>
+</pre>
 
-while for x¨2¨ we get:
+while for x<sub>2</sub> we get:
 
-		x¨2¨ = K/S W¨2¨ - S/K W¨6¨
+<pre>
+x<sub>2</sub> = K/S W<sub>2</sub> - S/K W<sub>6</sub>
+</pre>
 
 The constants of K/S and S/K are trigonometric identities: 
 
-	K/S = &radic;2cos(3&pi;/8) / &radic;2sin(3&pi;/8) = cot(3&pi;/8) = &radic;2 - 1
-	S/K = &radic;2sin(3&pi;/8) / &radic;2cos(3&pi;/8) = tan(3&pi;/8) = &radic;2 + 1
+<pre>
+K/S = &radic;2cos(3&pi;/8) / &radic;2sin(3&pi;/8) = cot(3&pi;/8) = &radic;2 - 1
+S/K = &radic;2sin(3&pi;/8) / &radic;2cos(3&pi;/8) = tan(3&pi;/8) = &radic;2 + 1
+</pre>
 
 then
 
-		x¨2¨ = (&radic;2 - 1) W¨2¨  - (&radic;2 + 1) W¨6¨  = &radic;2 W¨2¨ - W¨2¨ - &radic;2 W¨6¨ - W¨6¨  = &radic;2 ( W¨2¨ - W¨6¨ ) - W¨2¨ - W¨6¨
+<pre>
+x<sub>2</sub> = (&radic;2 - 1) W<sub>2</sub>  - (&radic;2 + 1) W<sub>6</sub>  = &radic;2 W<sub>2</sub> - W<sub>2</sub> - &radic;2 W<sub>6</sub> - W<sub>6</sub>  = &radic;2 ( W<sub>2</sub> - W<sub>6</sub> ) - W<sub>2</sub> - W<sub>6</sub>
+</pre>
 
 **That is, the scaled even part needs only one multiplication of &radic;2.** 
 
-§I discovered this accidently by looking at values in the Excel sheet I use to calculate factors. Indeed sin(3&pi;/8) = &half;&radic;(2+&radic;2) and cos(3&pi;/8) = &half;&radic;(2-&radic;2). Then K/S = &radic;( (2-&radic;2)/(2+&radic;2) ) = &radic;( (2-&radic;2)&sup2;/(4-2) ) = &radic; ( (4-4&radic;2+2) / 2 ) = &radic; ( 2-2&radic;2+1 ) = &radic; ( (&radic;2-1)&sup2; ) = &radic;2-1. S/K is similar.§ 
+*I discovered this accidently by looking at values in the Excel sheet I use to calculate factors. Indeed sin(3&pi;/8) = &half;&radic;(2+&radic;2) and cos(3&pi;/8) = &half;&radic;(2-&radic;2). Then K/S = &radic;( (2-&radic;2)/(2+&radic;2) ) = &radic;( (2-&radic;2)&sup2;/(4-2) ) = &radic; ( (4-4&radic;2+2) / 2 ) = &radic; ( 2-2&radic;2+1 ) = &radic; ( (&radic;2-1)&sup2; ) = &radic;2-1. S/K is similar.*
 
 Now we can include &alpha; and &beta; in the scaling vector **v**, and use simplified equations for computing the rotation for the even part:
 
@@ -274,29 +288,35 @@ Now we can include &alpha; and &beta; in the scaling vector **v**, and use simpl
 
 ## Scaling the odd part butterfly
 
-The odd-part starts with an adder: that is all 4 inputs must be equally scaled. That's a problem for simplifying the two butterfly multiplications for &eta;/&theta; and &delta;/&epsilon; that follows. The task is to find a common factor, *r*, which may simplify these two butterfly multiplications. When all 4 inputs of X¨1¨, X¨7¨, X¨5¨ and X¨3¨ are pre-scaled by *r*, then the equations become: 
+The odd-part starts with an adder: that is all 4 inputs must be equally scaled. That's a problem for simplifying the two butterfly multiplications for &eta;/&theta; and &delta;/&epsilon; that follows. The task is to find a common factor, *r*, which may simplify these two butterfly multiplications. When all 4 inputs of X<sub>1</sub>, X<sub>7</sub>, X<sub>5</sub> and X<sub>3</sub> are pre-scaled by *r*, then the equations become: 
 
-x¨1¨ = &eta;/r X¨1¨ + &theta;/r X¨7¨
-x¨7¨ = &eta;/r X¨7¨ - &theta;/r X¨1¨
+<pre>
+x<sub>1</sub> = &eta;/r X<sub>1</sub> + &theta;/r X<sub>7</sub>
+x<sub>7</sub> = &eta;/r X<sub>7</sub> - &theta;/r X<sub>1</sub>
 
-x¨5¨ = &delta;/r X¨5¨ + &epsilon;/r X¨3¨
-x¨3¨ = &delta;/r X¨3¨ - &epsilon;/r X¨5¨
+x<sub>5</sub> = &delta;/r X<sub>5</sub> + &epsilon;/r X<sub>3</sub>
+x<sub>3</sub> = &delta;/r X<sub>3</sub> - &epsilon;/r X<sub>5</sub>
+</pre>
 
-["odd.gif" width="400em"]
+<img src="odd.gif" width="50%"></img> 
 
 The only thing I could do is to chose one of the constants for pre-scaling - thus reducing the number of multiplications in one of the butterfly to 2. F. ex. when r = &eta; we get: 
 
-x¨1¨ = X¨1¨ + &theta;/&eta; X¨7¨
-x¨7¨ = X¨7¨ - &theta;/&eta; X¨1¨
+<pre>
+x<sub>1</sub> = X<sub>1</sub> + &theta;/&eta; X<sub>7</sub>
+x<sub>7</sub> = X<sub>7</sub> - &theta;/&eta; X<sub>1</sub>
 
-x¨5¨ = &delta;/&eta; X¨5¨ + &epsilon;/&eta; X¨3¨
-x¨3¨ = &delta;/&eta; X¨3¨ - &epsilon;/&eta; X¨5¨
+x<sub>5</sub> = &delta;/&eta; X<sub>5</sub> + &epsilon;/&eta; X<sub>3</sub>
+x<sub>3</sub> = &delta;/&eta; X<sub>3</sub> - &epsilon;/&eta; X<sub>5</sub>
+</pre>
 
-Furthermore, using one of the 3-mul equations for x¨5¨/x¨3¨, the total number of multiplications will be 5. F. ex. using the S(b-a) intermediate:
+Furthermore, using one of the 3-mul equations for x<sub>5</sub>/x<sub>3</sub>, the total number of multiplications will be 5. F. ex. using the S(b-a) intermediate:
 
-c = &epsilon;/&eta; (x¨3¨ - x¨5¨) 
-x¨5¨ = c + ( &delta;/&eta; + &epsilon;/&eta; ) X¨5¨
-x¨3¨ = c + ( &delta;/&eta; - &epsilon;/&eta; ) X¨3¨
+<pre>
+c = &epsilon;/&eta; (x<sub>3</sub> - x<sub>5</sub>) 
+x<sub>5</sub> = c + ( &delta;/&eta; + &epsilon;/&eta; ) X<sub>5</sub>
+x<sub>3</sub> = c + ( &delta;/&eta; - &epsilon;/&eta; ) X<sub>3</sub>
+</pre>
 
 Including r = &eta; in the scaling vector **v** for the odd part leads one of the the final solutions: 
 
@@ -309,7 +329,7 @@ and a modified 1-D LLM transform with 6 multiplications.
 
 The last equations reveal something promising: &delta; + &epsilon; and &delta; - &epsilon; are the sum and difference of cos(x) and sin(x) of the same angle and are trigonometric identities! I was hoping these equations might help the IDCT calculation, somehow, especially in the scaled version. Not really. The complexity remains the same, but it is an interesting investigation:  
 
-["pi16.png" width="400em"]
+<img src="pi16.png" width="50%"></img> 
 
 The odd part *runs* on the &pi;/16 line and there seem to be almost no relationship between sin/cos(&pi;/16) and sin/cos(3&pi;/16). Almost. 
 
@@ -321,7 +341,7 @@ I always wonder about trigonometric identities, how come is this true? It's pret
 
 **Plotting sin(x) + cos(x):**
 
-["sinx+cosx.png"]
+<img src="sinx+cosx.png" width="50%"></img> 
 
 The fig above shows sin(x), cos(x) and sin(x)+cos(x). Ok, periodic, same as sin/cos on 2&pi;. Shifted on the x axis by +/- &pi;/4 compared to sin and cos. The maximum is at &pi;/4, where both sin(&pi;/4) = cos(&pi;/4) = &radic;2/2, ergo max = &radic;2. 
 
@@ -352,7 +372,7 @@ and similarly for the sum of &eta; + &theta;:
 
 For the other multiplier in the 3-mul butterfly version K-S appears, lets make identities for these two in regard of the constants of the LLM transform. 
 
-["cosx-sinx.png"]
+<img src="cosx-sinx.png" width="50%"></img> 
 
 cos(x) - sin(x) = &radic;2 sin(x + 3&pi;/4) 
 
@@ -361,7 +381,6 @@ cos(x) - sin(x) = &radic;2 cos(x + &pi;/4)
 cos(x) - sin(x) = &radic;2 sin(x - 5&pi;/4) 
 
 cos(x) - sin(x) = &radic;2 cos(x - 7&pi;/4) 
-
 
 Now using the above we can state the following: 
 
@@ -373,15 +392,15 @@ and
 
 Giving som useful identities for the LLM transform: 
 
-** &delta; + &epsilon; = &radic;2 &eta; **
-** &delta; - &epsilon; = &radic;2 &theta; **
-** &epsilon; - &delta; = -&radic;2 &theta;  **
+**&delta; + &epsilon; = &radic;2 &eta;**
+**&delta; - &epsilon; = &radic;2 &theta;**
+**&epsilon; - &delta; = -&radic;2 &theta;**
 
 and 
 
-** &eta; + &theta; = &radic;2 &delta; **
-** &eta; - &theta; = &radic;2 &epsilon; **
-** &theta; - &eta; = -&radic;2 &epsilon; **
+**&eta; + &theta; = &radic;2 &delta;**
+**&eta; - &theta; = &radic;2 &epsilon;**
+**&theta; - &eta; = -&radic;2 &epsilon;**
 
 Again, I just could't find a better solution even with these identities for the scaled LLM transform. 
 
@@ -400,7 +419,7 @@ For the integer version, only an extra post-scale stage is required in the form 
 
 #### Using integer CPU arithmetics
 
-When using integer arithmetics, a good approximation of **v** is used, where **V** = INT (2<sup>n<sup> **v**). After the second 1D-transform, all values are shifted right by *n*: 
+When using integer arithmetics, a good approximation of **v** is used, where **V** = INT (2<sup>n</sup> **v**). After the second 1D-transform, all values are shifted right by *n*: 
 
 - pre-scale (multiplication)
 - row-transform

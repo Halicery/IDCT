@@ -1,4 +1,13 @@
-# The Discrete Cosine Transform 
+# The Inverse DCT
+
+[About DCT matrices](DCTmatrices.md)
+
+[Scaled IDCT](ScaledIDCT.md)
+
+[Fast HEVC transform](https://github.com/Halicery/hevc_trans)
+
+
+## The Discrete Cosine Transform 
 
 I had to spend quite a time on learning, understandig the DCT, attemping to write own IDCT routines for my stand-alone JPEG and video decoders, like MPEG, H.263 and HEVC. 
 
